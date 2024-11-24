@@ -23,8 +23,8 @@
 #include <time.h>
 
 // Replace with your network credentials
-const char *ssid = "XXXXXXXXXXXXXX";
-const char *password = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+const char *ssid = "xxxxxxxx";
+const char *password = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 
 #define DHTPIN 14  // Digital pin connected to the DHT sensor
 
@@ -34,7 +34,8 @@ const char *password = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 //initialize telegram bot
 #define BOTtoken "your telegram bot token here"
 
-int64_t userid = 0000000000;  //your chat id here. you can find this info at https://t.me/myidbot
+int64_t userid = 000000000;  //your chat id here. you can find this info at https://t.me/myidbot
+
 #define MYTZ "CET-1CEST,M3.5.0,M10.5.0/3"
 
 #ifdef ESP8266
@@ -338,18 +339,18 @@ void setup() {
     return;
   }
 
-  File dataFile = LittleFS.open("/data.txt", "r");
+  File dataFile = LittleFS.open("/data.csv", "r");
   if (!dataFile) {
-    writeFile("/data.txt", "temp,humidity,time\n");
+    writeFile("/data.csv", "temp,humidity,time\n");
   } else {
-    readFile("/data.txt");
+    readFile("/data.csv");
   }
   dataFile.close();
 
-  if (LittleFS.exists("/data.txt")) {
-    Serial.println("file /data.txt exists!");
+  if (LittleFS.exists("/data.csv")) {
+    Serial.println("file /data.csv exists!");
   } else {
-    Serial.println("file /data.txt does not exist");
+    Serial.println("file /data.csv does not exist");
   }
 
   LittleFS.info(fs_info);
@@ -363,7 +364,7 @@ void setup() {
   listDir("/");  //lists the files in the root directory
 
 
-  //deleteFile("/data.txt");  //just temperorary so esp storage doesnt fill up
+  //deleteFile("/data.csv");  //just temperorary so esp storage doesnt fill up
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
@@ -384,9 +385,9 @@ void setup() {
     request->send_P(200, "text/plain", String(h).c_str());
   });
   server.on("/download", HTTP_GET, [](AsyncWebServerRequest *request) {
-    if (LittleFS.exists("/data.txt")) {
+    if (LittleFS.exists("/data.csv")) {
       Serial.println("**file exists**");
-      request->send(LittleFS, "/data.txt", String(), true);
+      request->send(LittleFS, "/data.csv", String(), true);
     } else {
       Serial.println("**file does NOT exist**");
       request->send(404, "text/plain", "File could not be found unfortunatly");
@@ -451,7 +452,7 @@ void loop() {
         strcat(fileMessage, "\n");
         Serial.print(fileMessage);
 
-        appendFile("/data.txt", fileMessage);  //write temperature to file
+        appendFile("/data.csv", fileMessage);  //write temperature to file
         strcpy(fileMessage, "");               //empties the filemessage array so theres room for the next measurement
         LittleFS.info(fs_info);
         Serial.println("used bytes");
@@ -490,7 +491,7 @@ void loop() {
       // (File is a class derived from Stream)
       if (msgText.indexOf("/csv") > -1) {  //the indexOf method of checking for bot commands lets you embed commands in a sentence
         Serial.println("\nSending csv file from filesystem");
-        sendDocument(msg, AsyncTelegram2::DocumentType::CSV, "/data.txt");
+        sendDocument(msg, AsyncTelegram2::DocumentType::CSV, "/data.csv");
 
       } else if (msgText == "/thanks") {
         myBot.sendMessage(msg, "you're welcome");
