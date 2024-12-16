@@ -7,7 +7,7 @@
 
 #include <WiFiClientSecure.h>
 #include <ArduinoJson.h>
-
+#include "secrets.h"
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <Hash.h>
@@ -23,8 +23,8 @@
 #include <time.h>
 
 // Replace with your network credentials
-const char *ssid = "xxxxxxxx";
-const char *password = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+const char *ssid = SECRET_SSID;
+const char *password = SECRET_PASSWORD;
 
 #define DHTPIN 14  // Digital pin connected to the DHT sensor
 
@@ -32,7 +32,7 @@ const char *password = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 #define RED_LED 13
 
 //initialize telegram bot
-#define BOTtoken "your telegram bot token here"
+#define BOTtoken SECRET_API_KEY
 
 int64_t userid = 000000000;  //your chat id here. you can find this info at https://t.me/myidbot
 
