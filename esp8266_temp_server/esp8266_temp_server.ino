@@ -506,7 +506,7 @@ void loop() {
         message.concat(h);
         myBot.sendMessage(msg, message);
       } else if(msgText == "/start"){
-          myBot.sendMessage(msg, "welcome to temp sensor. try the /now, /temp, and /hum commands");
+          myBot.sendMessage(msg, "welcome to temp sensor. try the /now, /temp, /csv and /hum commands");
       } else if (msgText.equalsIgnoreCase("/reset")) {
         myBot.sendMessage(msg, "Restarting ESP....");
         // Wait until bot synced with telegram to prevent cyclic reboot
