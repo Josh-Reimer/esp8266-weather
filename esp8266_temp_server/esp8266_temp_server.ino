@@ -1,8 +1,3 @@
-#include <ESP8266mDNS.h>
-#include <LEAmDNS.h>
-#include <LEAmDNS_Priv.h>
-#include <LEAmDNS_lwIPdefs.h>
-
 #include <AsyncTelegram2.h>
 
 #include <WiFiClientSecure.h>
@@ -326,14 +321,6 @@ void setup() {
   getLocalTime(&tmstruct, 5000);
   Serial.printf("\nNow is : %d-%02d-%02d %02d:%02d:%02d\n", (tmstruct.tm_year) + 1900, (tmstruct.tm_mon) + 1, tmstruct.tm_mday, tmstruct.tm_hour, tmstruct.tm_min, tmstruct.tm_sec);
 
-  // Start mDNS at esptemp.local address
-  if (!MDNS.begin("esptemp")) {
-    Serial.println("Error starting mDNS");
-  }
-  Serial.println("mDNS started");
-
-  //LittleFS.format();  //format() deletes all the files  !!remove it to retain temp logs
-
   if (!LittleFS.begin()) {
     Serial.println("LittleFS mount failed");
     return;
@@ -358,13 +345,11 @@ void setup() {
   Serial.println(fs_info.totalBytes);
   Serial.println("used bytes");
   Serial.println(fs_info.usedBytes);
-  //should be able to log temp and humidity for 79 days if logging is done every hour
-
+  //should be able to log temp and humidity for 79 days if logging is done every hour. Update, actually more like 62 days.
 
   listDir("/");  //lists the files in the root directory
 
-
-  //deleteFile("/data.csv");  //just temperorary so esp storage doesnt fill up
+  //deleteFile("/data.csv");  //just temperorary so esp8266 storage doesnt fill up
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
@@ -506,7 +491,9 @@ void loop() {
         message.concat(h);
         myBot.sendMessage(msg, message);
       } else if(msgText == "/start"){
-          myBot.sendMessage(msg, "welcome to temp sensor. try the /now, /temp, /csv and /hum commands");
+          myBot.sendMessage(msg, "welcome to temp sensor. try the /now, /temp, /csv and /hum commands");\
+      } else if(msgText == "/filesize") {
+          listDir("/");
       } else if (msgText.equalsIgnoreCase("/reset")) {
         myBot.sendMessage(msg, "Restarting ESP....");
         // Wait until bot synced with telegram to prevent cyclic reboot
