@@ -10,7 +10,6 @@
 #include <ESPAsyncWebServer.h>
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
-#include <ESP8266mDNS.h>
 #include <floatToString.h>
 
 #include <FS.h>
@@ -58,7 +57,7 @@ void sendDocument(TBMessage &msg,
   }
 }
 long timezone = -4;
-byte daysavetime = 1;
+byte daysavetime = 0;
 
 FSInfo fs_info;
 
@@ -276,32 +275,20 @@ void deleteFile(const char *path) {
 void setup() {
   // Serial port for debugging purposes
   Serial.begin(115200);
+
+  // Connect to Wi-Fi
+  WiFi.begin(ssid, password);
+  Serial.println("Connecting to WiFi");
+
   dht.begin();
   lastTempChange = dht.readTemperature();
   lastHumidityChange = dht.readHumidity();
   pinMode(RED_LED, OUTPUT);
   pinMode(BLUE_LED, OUTPUT);
 
-  // Connect to Wi-Fi
-  WiFi.begin(ssid, password);
-  Serial.println("Connecting to WiFi");
-
   Serial.println("Contacting Time Server");
   configTime(3600 * timezone, daysavetime * 3600, "time.nist.gov", "0.pool.ntp.org", "1.pool.ntp.org");
   client.setTrustAnchors(&certificate);  //add root certificate for api.telegram.org
-
-#ifdef ESP8266
-  // Sync time with NTP, to check properly Telegram certificate
-  configTime(MYTZ, "time.google.com", "time.windows.com", "pool.ntp.org");
-  //Set certficate, session and some other base client properies
-  client.setSession(&session);
-  client.setTrustAnchors(&certificate);
-  client.setBufferSizes(1024, 1024);
-#elif defined(ESP32)
-  // Sync time with NTP
-  configTzTime(MYTZ, "time.google.com", "time.windows.com", "pool.ntp.org");
-  client.setCACert(telegram_cert);
-#endif
 
   // Set the Telegram bot properies
   myBot.setUpdateTime(1000);
@@ -491,7 +478,11 @@ void loop() {
         message.concat(h);
         myBot.sendMessage(msg, message);
       } else if(msgText == "/start"){
-          myBot.sendMessage(msg, "welcome to temp sensor. try the /now, /temp, /csv and /hum commands");\
+          myBot.sendMessage(msg, "welcome to temp sensor. try the /now, /temp, /csv and /hum commands");
+      } else if(msgText == "/time") {
+          char timeBuf[25];
+          getTime(timeBuf, sizeof(timeBuf));
+          myBot.sendMessage(msg, timeBuf);
       } else if(msgText == "/filesize") {
           listDir("/");
       } else if (msgText.equalsIgnoreCase("/reset")) {
@@ -505,8 +496,7 @@ void loop() {
 
       else {
         String replyMsg = "Welcome to the AsyncTelegram2 bot.\n\n";
-        replyMsg += "/csv will send an example csv file from fylesystem\n";
-
+        
         myBot.sendMessage(msg, replyMsg);
       }
     }
